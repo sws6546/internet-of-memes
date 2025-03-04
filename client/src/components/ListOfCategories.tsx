@@ -1,12 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useNavigate } from "react-router";
-
-type Category = {
-  id: string;
-  name: string;
-  pathName: string;
-}
+import type { Category } from "../types";
 
 export default function ListOfCategories() {
   const { isError, isPending, data, error } = useQuery({
@@ -27,11 +22,15 @@ export default function ListOfCategories() {
   }
   return (
     <>
-    {data.map((category, index) => (
-      <li onClick={() => navigate(`/category/${category.pathName}/${category.id}`)} key={index}>
-        <p>{category.name}</p>
-      </li>  
-    ))}
+      {data.map((category, index) => (
+        <li key={index}>
+          <button
+            onClick={() => navigate(`/category/${category.pathName}/${category.id}`)}
+            className="btn btn-dash">
+            {category.name}
+          </button>
+        </li>
+      ))}
     </>
   )
 }

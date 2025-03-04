@@ -3,6 +3,7 @@ import Home from "./pages/Home"
 import Drawer from "./components/Drawer"
 import Navbar from "./components/Navbar"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import Category from "./pages/Category"
 
 function App() {
   const queryClient = new QueryClient()
@@ -13,6 +14,7 @@ function App() {
           <Navbar />
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/category/:pathName/:categoryId" element={<Category />} />
           </Routes>
         </Drawer>
       </BrowserRouter>
