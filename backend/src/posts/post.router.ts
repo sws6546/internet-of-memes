@@ -29,7 +29,8 @@ export const Post = new Elysia({ prefix: "/posts" })
           filePath: true,
           createdAt: true,
           author: { select: { name: true } },
-          category: true
+          category: true,
+          Likes: true
         }
       })
     },
@@ -109,16 +110,34 @@ export const Post = new Elysia({ prefix: "/posts" })
     { beforeHandle: isUserMiddelware }
   )
   .post('/addLike',
-    async ({ headers, body: { postId } }: { headers: any, body: { postId: string } }) => {
+    async ({ headers, body: { postId, likeValue } }: { headers: any, body: { postId: string, likeValue: boolean } }) => {
       const { userId }: { userId: string } = await jose.decodeJwt(headers.authorization.split(" ")[1])
       if (!await prisma.user.findFirst({ where: { id: userId } })) return "there's no user with that token :("
+      if (!await prisma.post.findFirst({ where: { id: postId } })) return "there's no post with that id :("
       if (await prisma.like.findFirst({ where: { postId: postId, userId: userId } })) return "this like exist"
       return await prisma.like.create({
         data: {
           userId: userId,
-          postId: postId
+          postId: postId,
+          value: likeValue
         }
       })
+    },
+    {
+      beforeHandle: isUserMiddelware,
+      body: t.Object({
+        postId: t.String(),
+        likeValue: t.Boolean()
+      })
+    }
+  )
+  .delete('/removeLike',
+    async ({ headers, body: { postId } }: { headers: any, body: { postId: string } }) => {
+      const { userId }: { userId: string } = await jose.decodeJwt(headers.authorization.split(" ")[1])
+      if (!await prisma.user.findFirst({ where: { id: userId } })) return "there's no user with that token :("
+      if (!await prisma.post.findFirst({ where: { id: postId } })) return "there's no post with that id :("
+      const deletedLikes = await prisma.like.deleteMany({ where: { userId: userId, postId: postId } })
+      return { deleted_likes: deletedLikes.count }
     },
     {
       beforeHandle: isUserMiddelware,

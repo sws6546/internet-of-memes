@@ -18,7 +18,7 @@ model User {
   createdAt DateTime  @default(now())
   posts     Post[]
   comments  Comment[]
-  Like      Like[]
+  Likes      Like[]
 }
 
 model Post {
@@ -32,7 +32,7 @@ model Post {
   category    Category  @relation(fields: [categoryId], references: [id])
   categoryId  String
   comments    Comment[]
-  Like        Like[]
+  Likes        Like[]
 }
 
 model Comment {
@@ -54,9 +54,10 @@ model Category {
 }
 
 model Like {
-  id     String @id @default(cuid())
-  user   User   @relation(fields: [userId], references: [id])
+  id     String  @id @default(cuid())
+  value  Boolean
+  user   User    @relation(fields: [userId], references: [id])
   userId String
-  post   Post   @relation(fields: [postId], references: [id])
+  post   Post    @relation(fields: [postId], references: [id])
   postId String
 }
