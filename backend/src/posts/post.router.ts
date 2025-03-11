@@ -17,9 +17,9 @@ export const Post = new Elysia({ prefix: "/posts" })
     }
   }))
   .get("/fromCategory/:categoryId/:from/:amount",
-    async ({ params: {categoryId, from, amount } }) => {
+    async ({ params: { categoryId, from, amount } }) => {
       return await prisma.post.findMany({
-        where: {categoryId: categoryId},
+        where: { categoryId: categoryId },
         orderBy: { createdAt: 'desc' },
         skip: from - 1,
         take: amount,
@@ -69,7 +69,7 @@ export const Post = new Elysia({ prefix: "/posts" })
       const { userId }: { userId: string } = await jose.decodeJwt(headers.authorization.split(" ")[1])
       if (!await prisma.user.findFirst({ where: { id: userId } })) return "There's no user in db :("
       if (!await isEnoughTimeFromLastPost(userId)) return `Wait. Your last post was created less than ${Bun.env.POST_GAP}`
-      if (!await prisma.category.findFirst({where: {id: body.categoryId}})) return "This category does not exist"
+      if (!await prisma.category.findFirst({ where: { id: body.categoryId } })) return "This category does not exist"
       const filename: string = randomUUIDv7()
       await Bun.write(`./public/${filename}.jpg`, await body.file.arrayBuffer())
       return await prisma.post.create({
@@ -98,7 +98,7 @@ export const Post = new Elysia({ prefix: "/posts" })
       const post = await prisma.post.findFirst({ where: { id: postId } })
       if (!post) return "This post does not exist"
       if (post.authorId != userId) return "You aren't creator of this post"
-      if(post.filePath) await Bun.file(post.filePath).delete()
+      if (post.filePath) await Bun.file(post.filePath).delete()
       return await prisma.post.delete({
         where: {
           id: postId,
@@ -107,6 +107,25 @@ export const Post = new Elysia({ prefix: "/posts" })
       })
     },
     { beforeHandle: isUserMiddelware }
+  )
+  .post('/addLike',
+    async ({ headers, body: { postId } }: { headers: any, body: { postId: string } }) => {
+      const { userId }: { userId: string } = await jose.decodeJwt(headers.authorization.split(" ")[1])
+      if (!await prisma.user.findFirst({ where: { id: userId } })) return "there's no user with that token :("
+      if (await prisma.like.findFirst({ where: { postId: postId, userId: userId } })) return "this like exist"
+      return await prisma.like.create({
+        data: {
+          userId: userId,
+          postId: postId
+        }
+      })
+    },
+    {
+      beforeHandle: isUserMiddelware,
+      body: t.Object({
+        postId: t.String()
+      })
+    }
   )
 
 async function isEnoughTimeFromLastPost(userId: string) {
