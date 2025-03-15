@@ -5,21 +5,27 @@ import Navbar from "./components/Navbar"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import Category from "./pages/Category"
 import AuthPage from "./pages/AuthPage"
+import { useAuth } from "./hooks/useAuth"
+import { useAuthType } from "./types"
+import { AuthContext } from "./Contexts/AuthContext"
 
 function App() {
   const queryClient = new QueryClient()
+  const {login, logout, isUserLogged, user, token, loading, err, isErr}: useAuthType = useAuth()
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Drawer>
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/category/:pathName/:categoryId" element={<Category />} />
-          </Routes>
-        </Drawer>
-      </BrowserRouter>
+      <AuthContext.Provider value={{login, logout, isUserLogged, user, token, loading, err, isErr}}>
+        <BrowserRouter>
+          <Drawer>
+            <Navbar />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/category/:pathName/:categoryId" element={<Category />} />
+            </Routes>
+          </Drawer>
+        </BrowserRouter>
+      </AuthContext.Provider>
     </QueryClientProvider>
   )
 }

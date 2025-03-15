@@ -1,15 +1,16 @@
-import { useState } from "react"
-import { useAuth } from "../hooks/useAuth"
-import type { loginFormData } from "../types"
+import { useContext, useState } from "react"
+import type { loginFormData, useAuthType } from "../types"
+import { AuthContext } from "../Contexts/AuthContext"
 
 export default function LoginForm() {
   const [loginForm, setLoginForm] = useState<loginFormData>({username: "", password: ""})
-
-  const [login] = useAuth()
+  const auth: useAuthType | null = useContext(AuthContext)
 
   const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    login(loginForm.username, loginForm.password)
+    if(auth==null) {console.error("AUTH IS NULL"); return}
+    auth.login(loginForm.username, loginForm.password)
+    // TODO: is good logged?
   }
 
   return (

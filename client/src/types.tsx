@@ -43,3 +43,14 @@ export type loginFormData = {
   username: string;
   password: string;
 }
+
+export type useAuthType = {
+  login: (username: string, password: string) => Promise<void>;
+  logout: () => void;
+  isUserLogged: boolean;
+  user: User | null;
+  token: string | null;
+  loading: boolean;
+  err: string | null;
+  isErr: boolean;
+}

@@ -14,8 +14,17 @@ export function useAuth() {
   const backendUrl = import.meta.env.VITE_BACKEND_MAINURL
 
   useEffect(() => {
-    const token = localStorage.getItem("token")
-    if(!token) return;
+    const localToken = localStorage.getItem("token")
+    console.log(localToken)
+    if (localToken !== null) {
+      axios.get(`${backendUrl}/users/info`, { headers: { Authorization: `Bearer ${localToken}` } })
+      .then(({ data }) => {
+        if(!data.id) return
+        setIsUserLogged(true)
+        setUser({id: data.id, name: data.name, email: data.email})
+        setToken(localToken)
+      })
+    }
   }, [])
 
   async function login(username: string, password: string) {
@@ -33,8 +42,8 @@ export function useAuth() {
     setErr("")
     setToken(data.token)
     setIsUserLogged(true)
-    const userData: {userId: string, username: string, email: string} = jose.decodeJwt(data.token)
-    setUser({id: userData.userId, email: userData.email, name: username})
+    const userData: { userId: string, username: string, email: string } = jose.decodeJwt(data.token)
+    setUser({ id: userData.userId, email: userData.email, name: username })
     setLoading(false)
     localStorage.setItem("token", data.token)
   }
@@ -45,5 +54,5 @@ export function useAuth() {
     setUser(null)
   }
 
-  return [login, logout, isUserLogged, user, token, loading, err, isErr]
+  return {login, logout, isUserLogged, user, token, loading, err, isErr}
 }
