@@ -4,6 +4,7 @@ import Drawer from "./components/Drawer"
 import Navbar from "./components/Navbar"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import Category from "./pages/Category"
+import AuthPage from "./pages/AuthPage"
 
 function App() {
   const queryClient = new QueryClient()
@@ -14,6 +15,7 @@ function App() {
           <Navbar />
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/auth" element={<AuthPage />} />
             <Route path="/category/:pathName/:categoryId" element={<Category />} />
           </Routes>
         </Drawer>

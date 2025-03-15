@@ -6,6 +6,14 @@ export type Post = {
   createdAt: Date;
   author: Author;
   category: Category;
+  likes: Like[];
+}
+
+export type Like = {
+  id: string;
+  value: boolean;
+  userId: string;
+  postId: string;
 }
 
 export type Author = {
