@@ -16,6 +16,12 @@ export type Like = {
   postId: string;
 }
 
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+}
+
 export type Author = {
   name: string
 }
@@ -25,4 +31,15 @@ export type Category = {
   name: string;
   pathName: string;
   createdAt: Date;
+}
+
+export type registerFormData = {
+  username: string;
+  email: string;
+  password: string;
+}
+
+export type loginFormData = {
+  username: string;
+  password: string;
 }
