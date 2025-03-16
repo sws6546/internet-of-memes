@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import axios from "axios"
 import PostCard from "../components/Post"
 import InfiniteScroll from "react-infinite-scroll-component"
+import AddPostForm from "../components/AddPostForm"
 
 export default function Category() {
   const { categoryId } = useParams()
@@ -29,18 +30,21 @@ export default function Category() {
   }, [])
 
   return (
-    <InfiniteScroll
-    dataLength={posts.length}
-    next={fetchNextPosts}
-    hasMore={hasMore}
-    loader={<p>Loading...</p>}
-    endMessage={<p>There's no more posts :P</p>}
-    >
-      <main className="flex flex-col items-center">
-        {posts.map((post, index) => (
-          <PostCard post={post} key={index} />
-        ))}
-      </main>
-    </InfiniteScroll>
+    <>
+      <AddPostForm />
+      <InfiniteScroll
+        dataLength={posts.length}
+        next={fetchNextPosts}
+        hasMore={hasMore}
+        loader={<p>Loading...</p>}
+        endMessage={<p>There's no more posts :P</p>}
+      >
+        <main className="flex flex-col items-center">
+          {posts.map((post, index) => (
+            <PostCard post={post} key={index} />
+          ))}
+        </main>
+      </InfiniteScroll>
+    </>
   )
 }
