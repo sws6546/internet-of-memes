@@ -24,13 +24,14 @@ export const Post = new Elysia({ prefix: "/posts" })
         skip: from - 1,
         take: amount,
         select: {
+          id: true,
           title: true,
           textContent: true,
           filePath: true,
           createdAt: true,
           author: { select: { name: true } },
           category: true,
-          Likes: true
+          likes: true
         }
       })
     },
@@ -114,14 +115,25 @@ export const Post = new Elysia({ prefix: "/posts" })
       const { userId }: { userId: string } = await jose.decodeJwt(headers.authorization.split(" ")[1])
       if (!await prisma.user.findFirst({ where: { id: userId } })) return "there's no user with that token :("
       if (!await prisma.post.findFirst({ where: { id: postId } })) return "there's no post with that id :("
-      if (await prisma.like.findFirst({ where: { postId: postId, userId: userId } })) return "this like exist"
-      return await prisma.like.create({
+      const existingLike = await prisma.like.findFirst({ where: { postId: postId, userId: userId } })
+      if (!existingLike) {
+        return await prisma.like.create({
+          data: {
+            userId: userId,
+            postId: postId,
+            value: likeValue
+          }
+        })
+      }
+      else {
+        return await prisma.like.update({where: {
+          id: existingLike.id
+        },
         data: {
-          userId: userId,
-          postId: postId,
           value: likeValue
         }
       })
+      }
     },
     {
       beforeHandle: isUserMiddelware,

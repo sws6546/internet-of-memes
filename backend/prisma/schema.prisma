@@ -18,7 +18,7 @@ model User {
   createdAt DateTime  @default(now())
   posts     Post[]
   comments  Comment[]
-  Likes      Like[]
+  likes      Like[]
 }
 
 model Post {
@@ -32,7 +32,7 @@ model Post {
   category    Category  @relation(fields: [categoryId], references: [id])
   categoryId  String
   comments    Comment[]
-  Likes        Like[]
+  likes        Like[]
 }
 
 model Comment {

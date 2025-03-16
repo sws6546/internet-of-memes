@@ -9,6 +9,15 @@ type ChangePwdBody = {
 }
 
 export const User = new Elysia({ prefix: "users" })
+  .get("/info", 
+    async ({headers}: {headers: any}) => {
+      const { userId }: { userId: string } = await jose.decodeJwt(headers.authorization.split(" ")[1])
+      const userInDb = await prisma.user.findFirst({ where: { id: userId }, select: {id: true, name: true, email: true} })
+      if (!userInDb) return {err: "There's no that user in db :("}
+      return userInDb
+    }, 
+    {beforeHandle: isUserMiddelware}
+   )
   .get("/getall",
     async () => {
       const users = await prisma.user.findMany({

@@ -1,17 +1,24 @@
-import { useContext, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import type { loginFormData, useAuthType } from "../types"
 import { AuthContext } from "../Contexts/AuthContext"
+import { useNavigate } from "react-router"
 
 export default function LoginForm() {
-  const [loginForm, setLoginForm] = useState<loginFormData>({username: "", password: ""})
+  const [loginForm, setLoginForm] = useState<loginFormData>({ username: "", password: "" })
   const auth: useAuthType | null = useContext(AuthContext)
+  const navigate = useNavigate()
 
-  const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
+  const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if(auth==null) {console.error("AUTH IS NULL"); return}
-    auth.login(loginForm.username, loginForm.password)
-    // TODO: is good logged?
+    if (auth == null) { console.error("AUTH IS NULL"); return }
+    await auth.login(loginForm.username, loginForm.password)
   }
+
+  useEffect(() => {
+    if (auth?.isUserLogged) {
+      navigate("/")
+    }
+  }, [auth?.isUserLogged])
 
   return (
     <form onSubmit={submitHandler} className="bg-base-300 flex flex-col gap-4 rounded-md items-center p-4 pt-12 pb-12
@@ -30,7 +37,10 @@ export default function LoginForm() {
           Must be more than 3 characters
         </p>
       </label>
-      <input type="submit" value="login" className="btn btn-primary" />
+      <button type="submit" className="btn btn-primary">
+        {auth?.loading ? <span className="loading loading-spinner loading-md"></span> : <p>Login</p>}
+      </button>
+      {auth?.isErr && <p className="text-red-500">{auth.err}</p>}
     </form>
   )
 }

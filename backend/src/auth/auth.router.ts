@@ -10,7 +10,6 @@ type RegisterBody = {
 
 type LoginBody = {
   name: string;
-  email: string;
   password: string;
 }
 
@@ -39,7 +38,7 @@ export const Auth = new Elysia({prefix: "/auth"})
       if (!await Bun.password.verify(body.password, user.password)) {
         return "bad pwd :("
       }
-      return { msg: "logged", token: await createToken({ userId: user.id, username: user.name }) }
+      return { msg: "logged", token: await createToken({ userId: user.id, username: user.name, email: user.email }) }
     }
   )
 

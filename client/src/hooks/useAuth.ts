@@ -15,15 +15,15 @@ export function useAuth() {
 
   useEffect(() => {
     const localToken = localStorage.getItem("token")
-    console.log(localToken)
     if (localToken !== null) {
       axios.get(`${backendUrl}/users/info`, { headers: { Authorization: `Bearer ${localToken}` } })
       .then(({ data }) => {
-        if(!data.id) return
+        if(!data.id) {localStorage.clear(); return}
         setIsUserLogged(true)
         setUser({id: data.id, name: data.name, email: data.email})
         setToken(localToken)
       })
+      .catch(() => {})
     }
   }, [])
 
@@ -36,13 +36,14 @@ export function useAuth() {
     if (!data.token) {
       setIsErr(true)
       setErr("Bad username or password")
+      setLoading(false)
       return
     }
     setIsErr(false)
     setErr("")
     setToken(data.token)
     setIsUserLogged(true)
-    const userData: { userId: string, username: string, email: string } = jose.decodeJwt(data.token)
+    const userData: { userId: string, username: string, email: string } = await jose.decodeJwt(data.token)
     setUser({ id: userData.userId, email: userData.email, name: username })
     setLoading(false)
     localStorage.setItem("token", data.token)
@@ -52,6 +53,7 @@ export function useAuth() {
     setToken(null)
     setIsUserLogged(false)
     setUser(null)
+    localStorage.clear()
   }
 
   return {login, logout, isUserLogged, user, token, loading, err, isErr}
