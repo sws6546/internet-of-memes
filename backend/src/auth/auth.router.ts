@@ -1,4 +1,4 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import { prisma } from "../prisma";
 import * as jose from 'jose'
 
@@ -13,7 +13,7 @@ type LoginBody = {
   password: string;
 }
 
-export const Auth = new Elysia({prefix: "/auth"})
+export const Auth = new Elysia({ prefix: "/auth" })
   .post("/register",
     async ({ body }: { body: RegisterBody }) => {
       const existedUserName = await prisma.user.findFirst({ where: { name: body.name } })
@@ -28,8 +28,13 @@ export const Auth = new Elysia({prefix: "/auth"})
         }
       })
       return { ...createdUser, password: "SECRET :D" }
-    }
-  )
+    }, {
+    body: t.Object({
+      name: t.String(),
+      email: t.String(),
+      password: t.String()
+    })
+  })
 
   .post("/login",
     async ({ body }: { body: LoginBody }) => {
@@ -39,6 +44,11 @@ export const Auth = new Elysia({prefix: "/auth"})
         return "bad pwd :("
       }
       return { msg: "logged", token: await createToken({ userId: user.id, username: user.name, email: user.email }) }
+    }, {
+      body: t.Object({
+        name: t.String(),
+        password: t.String()
+      })
     }
   )
 

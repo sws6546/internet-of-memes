@@ -108,7 +108,12 @@ export const Post = new Elysia({ prefix: "/posts" })
         }
       })
     },
-    { beforeHandle: isUserMiddelware }
+    { 
+      beforeHandle: isUserMiddelware,
+      body: t.Object({
+        postId: t.String()
+      })
+    }
   )
   .post('/addLike',
     async ({ headers, body: { postId, likeValue } }: { headers: any, body: { postId: string, likeValue: boolean } }) => {
