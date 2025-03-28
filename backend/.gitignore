@@ -41,5 +41,6 @@ yarn-error.log*
 **/*.bun
 
 /public
-public/
-public
+/public/*
+
+dev.db
