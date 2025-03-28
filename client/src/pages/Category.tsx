@@ -5,11 +5,13 @@ import axios from "axios"
 import PostCard from "../components/Post"
 import InfiniteScroll from "react-infinite-scroll-component"
 import AddPostForm from "../components/AddPostForm"
+import { useAuth } from "../hooks/useAuth"
 
 export default function Category() {
   const { categoryId } = useParams()
   const [posts, setPosts] = useState<Post[]>([])
   const [hasMore, setHasMore] = useState<boolean>(true)
+  const { isUserLogged } = useAuth()
 
   const fetchFirstPosts = async () => {
     const url = `${import.meta.env.VITE_BACKEND_MAINURL}/posts/fromCategory/${categoryId}/${posts.length + 1}/${10}`
@@ -31,7 +33,7 @@ export default function Category() {
 
   return (
     <>
-      <AddPostForm />
+      {isUserLogged && <AddPostForm /> }
       <InfiniteScroll
         dataLength={posts.length}
         next={fetchNextPosts}
