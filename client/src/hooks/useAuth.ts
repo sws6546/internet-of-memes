@@ -27,15 +27,17 @@ export function useAuth() {
     }
   }, [])
 
-  async function login(username: string, password: string) {
+  async function login(username: string, password: string, GCaptcha: string) {
     setLoading(true)
     const { data } = await axios.post(`${backendUrl}/auth/login/`, {
       name: username,
-      password: password
+      password: password,
+      g_captcha: GCaptcha
     })
     if (!data.token) {
       setIsErr(true)
-      setErr("Bad username or password")
+      if(data.err) setErr(data.err)
+      else setErr("Bad username or password")
       setLoading(false)
       return
     }

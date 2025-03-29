@@ -45,7 +45,7 @@ export type loginFormData = {
 }
 
 export type useAuthType = {
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string, GCaptcha: string) => Promise<void>;
   logout: () => void;
   isUserLogged: boolean;
   user: User | null;
