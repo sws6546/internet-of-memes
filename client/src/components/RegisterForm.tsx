@@ -1,11 +1,13 @@
 import { useState } from "react"
 import type { registerFormData } from "../types"
 import axios from "axios"
+import RecaptchaButton from "./RecaptchaButton"
 
 export default function RegisterForm() {
   const [registerForm, setRegisterForm] = useState<registerFormData>({ username: "", email: "", password: "" })
   const [error, setError] = useState<string>("")
   const [isRegistered, setIsRegistered] = useState<boolean>(false)
+  const [GCaptcha, setGCaptcha] = useState<string>("")
 
   const register = async () => {
     const backendUrl = import.meta.env.VITE_BACKEND_MAINURL
@@ -13,9 +15,11 @@ export default function RegisterForm() {
       name: registerForm.username,
       email: registerForm.email,
       password: registerForm.password,
+      g_captcha: GCaptcha
     })
     if (!data.id) {
-      setError(data)
+      if(data.err) setError(data.err)
+      else setError(data)
       return
     }
     else {
@@ -38,29 +42,24 @@ export default function RegisterForm() {
      border border-accent-content shadow-xl">
         <label className="floating-label w-4/5">
           <input onChange={(e) => { setRegisterForm((data) => ({ ...data, username: e.target.value })) }}
-            type="text" placeholder="Username" className="input validator" required minLength={3} />
+            type="text" placeholder="Username" className="input validator w-full" required minLength={3} />
           <span>Username</span>
           <p className="validator-hint">Must be more than 3 characters</p>
         </label>
         <label className="floating-label w-4/5">
           <input onChange={(e) => { setRegisterForm((data) => ({ ...data, email: e.target.value })) }}
-            type="email" placeholder="Email" className="input validator" required />
+            type="email" placeholder="Email" className="input validator w-full" required />
           <span>Email</span>
           <p className="validator-hint">Must be real email</p>
         </label>
         <label className="floating-label w-4/5">
           <input onChange={(e) => { setRegisterForm((data) => ({ ...data, password: e.target.value })) }}
-            type="password" placeholder="Password" className="input validator" required
-            minLength={8} pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+            type="password" placeholder="Password" className="input validator w-full" required
+            minLength={4} // pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
           />
           <span>Password</span>
-          <p className="validator-hint">
-            Must be more than 8 characters, including
-            <br />At least one number
-            <br />At least one lowercase letter
-            <br />At least one uppercase letter
-          </p>
         </label>
+        <RecaptchaButton setGCaptcha={setGCaptcha}/>
         <input type="submit" value="register" className="btn btn-accent" />
         <p className="text-red-500">{error}</p>
       </form>
