@@ -70,8 +70,9 @@ export const Post = new Elysia({ prefix: "/posts" })
     async ({ headers, body }: { headers: any, body: { title: string, textContent?: string, file: File, categoryId: string } }) => {
       const { userId }: { userId: string } = await jose.decodeJwt(headers.authorization.split(" ")[1])
       if (!await prisma.user.findFirst({ where: { id: userId } })) return "There's no user in db :("
-      if (!await isEnoughTimeFromLastPost(userId)) return `Wait. Your last post was created less than ${Bun.env.POST_GAP}`
+      if (!await isEnoughTimeFromLastPost(userId)) return {err: `Wait. Your last post was created less than ${Bun.env.POST_GAP}`}
       if (!await prisma.category.findFirst({ where: { id: body.categoryId } })) return "This category does not exist"
+      if(await isNsfw(body.file)) return {err: "This post is nsfw"}
       const filename: string = randomUUIDv7()
       await Bun.write(`./public/${filename}.jpg`, await body.file.arrayBuffer())
       return await prisma.post.create({
@@ -163,6 +164,17 @@ export const Post = new Elysia({ prefix: "/posts" })
       })
     }
   )
+
+async function isNsfw(file: File) {
+  const formData = new FormData()
+  formData.append("file", file)
+  const result = await fetch("https://vx.link/public/nsfw", {
+    method: "POST",
+    body: formData,
+  })
+  const json = await result.json()
+  return (json.data.nsfw > 0.6)
+}
 
 async function isEnoughTimeFromLastPost(userId: string) {
   const lastUserPost = await prisma.post.findFirst({ orderBy: { createdAt: "desc" }, where: { authorId: userId } })
