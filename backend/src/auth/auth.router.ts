@@ -42,7 +42,7 @@ export const Auth = new Elysia({ prefix: "/auth" })
 
   .post("/login",
     async ({ body }: { body: LoginBody }) => {
-      if (await verifyReCaptcha(body.g_captcha) == false) return { err: "Captcha failed" }
+      if (!await verifyReCaptcha(body.g_captcha)) return { err: "Captcha failed" }
       const user = await prisma.user.findFirst({ where: { name: body.name } })
       if (!user) return "There's no user with that name"
       if (!await Bun.password.verify(body.password, user.password)) {
@@ -67,18 +67,30 @@ export async function createToken(payload: any) {
 }
 
 export async function verifyReCaptcha(g_captcha: string) {
-  const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
-    method: "POST",
-    body: JSON.stringify({
-      secret: Bun.env.GOOGLE_RECAPTCHA_SECRET_KEY,
+  try {
+    const params = new URLSearchParams({
+      secret: Bun.env.GOOGLE_RECAPTCHA_SECRET_KEY || '',
       response: g_captcha
-    }),
-    headers: {
-      "Content-Type": "application/json"
+    });
+
+    const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: params.toString()
+    });
+
+    if (!response.ok) {
+      return false;
     }
-  })
-  const data = await response.json()
-  return data.success
+
+    const data = await response.json();
+    return data.success === true;
+  } catch (error) {
+    console.error('Error verifying reCAPTCHA:', error);
+    return false;
+  }
 }
 
 export async function verifyToken(token: string) {

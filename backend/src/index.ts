@@ -6,6 +6,7 @@ import { Post } from "./posts/post.router";
 import staticPlugin from "@elysiajs/static";
 import cors from "@elysiajs/cors";
 import { Category } from "./categories/category.router";
+import { Comment } from "./comments/comment.router";
 
 const app = new Elysia()
   .get("/", () => "Hello Elysia")
@@ -16,6 +17,7 @@ const app = new Elysia()
   .use(Auth)
   .use(Category)
   .use(Post)
+  .use(Comment)
   .listen(3000);
 
 console.log(
