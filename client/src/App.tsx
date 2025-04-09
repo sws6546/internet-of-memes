@@ -8,13 +8,14 @@ import AuthPage from "./pages/AuthPage"
 import { useAuth } from "./hooks/useAuth"
 import { useAuthType } from "./types"
 import { AuthContext } from "./Contexts/AuthContext"
+import PostPage from "./pages/PostPage"
 
 function App() {
   const queryClient = new QueryClient()
-  const {login, logout, isUserLogged, user, token, loading, err, isErr}: useAuthType = useAuth()
+  const { login, logout, isUserLogged, user, token, loading, err, isErr }: useAuthType = useAuth()
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthContext.Provider value={{login, logout, isUserLogged, user, token, loading, err, isErr}}>
+      <AuthContext.Provider value={{ login, logout, isUserLogged, user, token, loading, err, isErr }}>
         <BrowserRouter>
           <Drawer>
             <Navbar />
@@ -22,6 +23,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/category/:pathName/:categoryId" element={<Category />} />
+              <Route path="/post/:postId" element={<PostPage />} />
             </Routes>
           </Drawer>
         </BrowserRouter>

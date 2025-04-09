@@ -33,6 +33,14 @@ export type Category = {
   createdAt: Date;
 }
 
+export type CommentType = {
+  id: string;
+  textContent: string;
+  createdAt: Date;
+  postId: string;
+  author: string;
+}
+
 export type registerFormData = {
   username: string;
   email: string;
