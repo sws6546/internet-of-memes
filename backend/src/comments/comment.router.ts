@@ -6,10 +6,24 @@ import { prisma } from "../prisma";
 export const Comment = new Elysia({ prefix: "/comment" })
   .get("/getAll/:postId",
     async ({ params: { postId } }: { params: { postId: string } }) => {
-      return prisma.comment.findMany({
+      const comments = await prisma.comment.findMany({
         where: { postId: postId },
         orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          textContent: true,
+          createdAt: true,
+          postId: true,
+          author: {
+            select: {
+              name: true
+            }
+          },
+        }
       })
+      return comments.map(comment => ({
+        ...comment, author: comment.author.name,
+      }))
     },
     {
       params: t.Object({
@@ -17,13 +31,21 @@ export const Comment = new Elysia({ prefix: "/comment" })
       })
     }
   )
+  .get("/count/:postId",
+    async ({ params: { postId } }: { params: { postId: string } }) => {
+      return await prisma.comment.count({ where: { postId: postId } })
+    }, {
+    params: t.Object({
+      postId: t.String()
+    })
+  })
   .post("/create",
     async ({ headers, body }: { headers: any, body: { postId: string, textContent: string } }) => {
       const { userId }: { userId: string } = await jose.decodeJwt(headers.authorization.split(" ")[1])
       if (!await prisma.user.findFirst({ where: { id: userId } })) return { err: "There's no user in db :(" }
       if (!await isEnoughTimeFromLastComment(userId)) return { err: "You need to wait a bit before commenting again" }
       if (!await prisma.post.findFirst({ where: { id: body.postId } })) return { err: "There's no post with that id :(" }
-      if (!await prisma.comment.findFirst({ where: { postId: body.postId, authorId: userId, textContent: body.textContent } }))
+      if (await prisma.comment.findFirst({ where: { postId: body.postId, authorId: userId, textContent: body.textContent } }))
         return { err: "The same comment already exists" }
       return await prisma.comment.create({
         data: {

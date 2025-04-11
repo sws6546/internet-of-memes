@@ -5,6 +5,25 @@ import * as jose from 'jose'
 import { randomUUIDv7 } from "bun";
 
 export const Post = new Elysia({ prefix: "/posts" })
+  .get("/getOne/:id", async ({ params: { id } }) => {
+    return await prisma.post.findFirst({
+      where: { id: id },
+      select: {
+        id: true,
+        title: true,
+        textContent: true,
+        filePath: true,
+        createdAt: true,
+        author: { select: { name: true } },
+        category: true,
+        likes: true
+      }
+    })
+  }, {
+    params: t.Object({
+      id: t.String()
+    })
+  })
   .get("/getAll", async () => await prisma.post.findMany({
     select: {
       id: true,
@@ -13,7 +32,8 @@ export const Post = new Elysia({ prefix: "/posts" })
       filePath: true,
       createdAt: true,
       author: { select: { name: true } },
-      category: true
+      category: true,
+      likes: true
     }
   }))
   .get("/fromCategory/:categoryId/:from/:amount",
@@ -70,9 +90,9 @@ export const Post = new Elysia({ prefix: "/posts" })
     async ({ headers, body }: { headers: any, body: { title: string, textContent?: string, file: File, categoryId: string } }) => {
       const { userId }: { userId: string } = await jose.decodeJwt(headers.authorization.split(" ")[1])
       if (!await prisma.user.findFirst({ where: { id: userId } })) return "There's no user in db :("
-      if (!await isEnoughTimeFromLastPost(userId)) return {err: `Wait. Your last post was created less than ${Bun.env.POST_GAP}`}
+      if (!await isEnoughTimeFromLastPost(userId)) return { err: `Wait. Your last post was created less than ${Bun.env.POST_GAP}` }
       if (!await prisma.category.findFirst({ where: { id: body.categoryId } })) return "This category does not exist"
-      if(await isNsfw(body.file)) return {err: "This post is nsfw"}
+      if (await isNsfw(body.file)) return { err: "This post is nsfw" }
       const filename: string = randomUUIDv7()
       await Bun.write(`./public/${filename}.jpg`, await body.file.arrayBuffer())
       return await prisma.post.create({
@@ -109,7 +129,7 @@ export const Post = new Elysia({ prefix: "/posts" })
         }
       })
     },
-    { 
+    {
       beforeHandle: isUserMiddelware,
       body: t.Object({
         postId: t.String()
@@ -132,13 +152,14 @@ export const Post = new Elysia({ prefix: "/posts" })
         })
       }
       else {
-        return await prisma.like.update({where: {
-          id: existingLike.id
-        },
-        data: {
-          value: likeValue
-        }
-      })
+        return await prisma.like.update({
+          where: {
+            id: existingLike.id
+          },
+          data: {
+            value: likeValue
+          }
+        })
       }
     },
     {

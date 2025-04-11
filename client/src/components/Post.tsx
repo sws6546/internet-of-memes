@@ -1,4 +1,4 @@
-import { ReactNode, useContext, useState } from "react"
+import { ReactNode, useContext, useEffect, useState } from "react"
 import type { Like, Post } from "../types"
 import axios from "axios"
 import { AuthContext } from "../Contexts/AuthContext"
@@ -7,8 +7,16 @@ import { useNavigate } from "react-router"
 export default function PostCard({ post, clickable }: { post: Post, clickable?: boolean }) {
   const [likes, setLikes] = useState<Like[]>(post.likes)
   const [userLikeValue, setUserLikeValue] = useState<boolean | null>(null)
+  const [commentsCount, setCommentsCount] = useState<number>(0)
   const auth = useContext(AuthContext)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    axios.get(`${import.meta.env.VITE_BACKEND_MAINURL}/comment/count/${post.id}`)
+      .then(data => {
+        setCommentsCount(data.data)
+      })
+  }, [])
 
   const sendLike = async (likeValue: boolean) => {
     const appUrl = import.meta.env.VITE_BACKEND_MAINURL
@@ -38,12 +46,17 @@ export default function PostCard({ post, clickable }: { post: Post, clickable?: 
         </div>
         <img src={`${import.meta.env.VITE_BACKEND_MAINURL}/${post.filePath}`} alt={post.filePath} />
       </Clickable>
-      <button onClick={() => { sendLike(true) }} className="btn btn-dash">{import.meta.env.VITE_LIKE_EMOJI}{
-        likes.filter(like => like.value).length + [userLikeValue].filter(like => like != null).filter(like => like).length
-      }</button>
-      <button onClick={() => { sendLike(false) }} className="btn btn-dash">{import.meta.env.VITE_DISLIKE_EMOJI}{
-        likes.filter(like => !like.value).length + [userLikeValue].filter(like => like != null).filter(like => !like).length
-      }</button>
+      <div className="flex flex-row justify-between gap-1 items-center">
+        <div className="flex flex-row gap-1">
+          <button onClick={() => { sendLike(true) }} className="btn btn-dash">{import.meta.env.VITE_LIKE_EMOJI}{
+            likes.filter(like => like.value).length + [userLikeValue].filter(like => like != null).filter(like => like).length
+          }</button>
+          <button onClick={() => { sendLike(false) }} className="btn btn-dash">{import.meta.env.VITE_DISLIKE_EMOJI}{
+            likes.filter(like => !like.value).length + [userLikeValue].filter(like => like != null).filter(like => !like).length
+          }</button>
+        </div>
+        <p className="p-2 text-secondary-content">comments: {commentsCount}</p>
+      </div>
     </div>
   )
 }
@@ -52,7 +65,7 @@ function Clickable({ clickable, children, onClick }: { clickable?: boolean, chil
   return (
     <>
       {clickable != false ?
-        <div onClick={onClick}>
+        <div onClick={onClick} className="cursor-pointer">
           {children}
         </div>
         :
