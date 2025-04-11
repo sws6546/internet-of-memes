@@ -1,11 +1,12 @@
 import { ReactNode, useContext, useEffect, useState } from "react"
-import type { Like, Post } from "../types"
+import type { Post } from "../types"
 import axios from "axios"
 import { AuthContext } from "../Contexts/AuthContext"
 import { useNavigate } from "react-router"
 
 export default function PostCard({ post, clickable }: { post: Post, clickable?: boolean }) {
-  const [likes, setLikes] = useState<Like[]>(post.likes)
+  // const [likes, setLikes] = useState<Like[]>(post.likes)
+  const likes = post.likes
   const [userLikeValue, setUserLikeValue] = useState<boolean | null>(null)
   const [commentsCount, setCommentsCount] = useState<number>(0)
   const auth = useContext(AuthContext)
