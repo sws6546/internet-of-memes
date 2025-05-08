@@ -11,3 +11,5 @@ in terminal type :
 * `bunx prisma db push`
 * `bunx prisma db seed`
 * `bun dev`
+
+or type `docker compose up`
